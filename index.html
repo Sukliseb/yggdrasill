@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#11120f">
+<title>Yggdrasill — Art Auctions</title>
+<style>
+:root{--bg:#11120f;--panel:#1b1c18;--text:#f1eee5;--muted:#a7a597;--accent:#c7a66a;--line:#35352c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif;transition:background .35s,color .35s}
+body.hel{--bg:#1b100f;--panel:#291916;--accent:#ef8749;--line:#553126}
+body.nif{--bg:#0b121c;--panel:#141f2d;--accent:#a6c9ed;--line:#293d52}
+body.van{--bg:#101a12;--panel:#1a291b;--accent:#9acb82;--line:#334b31}
+body.mus{--bg:#21140e;--panel:#302016;--accent:#ffbd69;--line:#5b3822}
+button,input,select{font:inherit}
+button,.btn{display:inline-block;color:var(--text);background:var(--panel);border:1px solid var(--line);padding:10px 14px;border-radius:3px;text-decoration:none;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--accent);color:var(--accent)}
+.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+header{padding:22px 6%;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.logo{font-size:30px;letter-spacing:4px;color:var(--accent)}
+.tagline{font:11px Arial,sans-serif;letter-spacing:2px;color:var(--muted);margin-top:5px}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+main{max-width:1400px;margin:auto;padding:30px 6% 70px}
+.hero{padding:65px 35px;margin-bottom:28px;border:1px solid var(--line);background:linear-gradient(110deg,var(--panel),transparent)}
+.eyebrow{color:var(--accent);letter-spacing:3px;font-size:12px}
+h1{font-size:clamp(38px,6vw,72px);font-weight:normal;margin:16px 0}
+h2{font-size:28px;font-weight:normal}
+p{line-height:1.65}
+.muted{color:var(--muted)}
+.seasons,.filters{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 28px}
+.season.active{border-color:var(--accent);color:var(--accent)}
+.filters input,.filters select,.modal input{min-width:0;padding:12px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:3px}
+.filters input{flex:2;min-width:180px}.filters select{flex:1;min-width:150px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);min-width:0;display:flex;flex-direction:column}
+.art{height:190px;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(145deg,var(--line),var(--panel));position:relative}
+.art small{position:absolute;bottom:10px;left:12px;font:11px Arial,sans-serif;letter-spacing:2px;color:var(--accent)}
+.card-body{padding:18px;display:flex;flex-direction:column;align-items:flex-start;flex:1}
+.card h3{font-size:21px;font-weight:normal;margin:10px 0}
+.price{font-size:22px;color:var(--accent);margin:12px 0}
+.timer{color:var(--accent);font:13px Arial,sans-serif}
+.pill{font:11px Arial,sans-serif;border:1px solid var(--line);padding:5px 8px;color:var(--muted);display:inline-block}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;width:100%}
+.card-actions button,.card-actions a{flex:1;text-align:center;min-width:85px}
+.link-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:12px}
+.link-list a{font-size:12px}
+.empty{padding:25px;border:1px dashed var(--line);color:var(--muted);grid-column:1/-1}
+footer{border-top:1px solid var(--line);padding:25px 6%;color:var(--muted);font-size:13px}
+.modal{display:none;position:fixed;inset:0;background:#000b;z-index:5;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.dialog{background:var(--bg);border:1px solid var(--accent);padding:25px;width:min(440px,100%);max-height:90vh;overflow:auto}
+.close{float:right}
+.dialog input{width:100%;margin:7px 0 14px}
+#notice{position:fixed;bottom:20px;right:20px;max-width:calc(100% - 40px);background:var(--panel);border:1px solid var(--accent);padding:14px;display:none;z-index:10}
+.real-note{font:12px/1.6 Arial,sans-serif;color:var(--muted);margin-top:14px}
+.refresh-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0}.refresh-status{font:12px/1.5 Arial,sans-serif;color:var(--muted)}.refresh-status.error{color:#ff9b82}.refresh-status.ok{color:#9acb82}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}main{padding:20px 4% 45px}.hero{padding:35px 20px}header{padding:18px 4%}.logo{font-size:24px}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="logo">ᛉ YGGDRASILL</div><div class="tagline">THE ART OF THE NINE WORLDS</div></div>
+  <nav>
+    <button onclick="go('catalog')">Демо-каталог</button>
+    <button onclick="showHistory()">История</button>
+    <button onclick="showFavorites()">Избранное</button>
+    <button onclick="openAccount()" id="accountBtn">Войти</button>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow" id="worldLabel">WORLD I · HELHEIM</div>
+    <h1 id="heroTitle">Красота на грани тьмы.</h1>
+    <p class="muted" id="heroText">Открой произведения, в которых живут легенды. Найди свой следующий шедевр.</p>
+    <button class="primary" onclick="go('realAuctions')">Перейти к реальным аукционам ↗</button>
+  </section>
+
+  <h2>Выбери свой мир</h2>
+  <div class="seasons">
+    <button class="season" data-world="hel" onclick="setWorld('hel')">🎃 Хельхейм</button>
+    <button class="season" data-world="nif" onclick="setWorld('nif')">❄ Нифльхейм</button>
+    <button class="season" data-world="van" onclick="setWorld('van')">🌿 Ванахейм</button>
+    <button class="season" data-world="mus" onclick="setWorld('mus')">☀ Муспельхейм</button>
+  </div>
+
+  <section id="recommendSection">
+    <div class="section-head"><h2>Предсказание Иггдрасиля</h2><span class="muted">Рекомендации для тебя</span></div>
+    <p class="muted">Подборка учитывает просмотры и избранное в этом браузере.</p>
+    <div class="grid" id="recommendations"></div>
+  </section>
+
+  <section id="realAuctions" style="margin-top:50px">
+    <div class="section-head"><h2>Реальные лоты и аукционы</h2><span class="muted">Внешние площадки</span></div>
+    <p class="muted">Обновляй список через подключённый серверный источник. Перед ставкой всегда проверяй текущий статус лота и условия торгов на сайте аукционного дома.</p>
+    <div class="refresh-row">
+      <button class="primary" id="refreshRealLotsBtn" onclick="refreshRealLots()">↻ Обновить реальные лоты</button>
+      <span class="refresh-status" id="realLotsStatus" role="status" aria-live="polite">Список ещё не обновлялся в этой сессии.</span>
+    </div>
+    <div class="grid" id="realLotsGrid"></div>
+    <div class="grid" style="margin-top:18px">
+      <article class="card"><div class="card-body">
+        <span class="pill">Официальный каталог</span><h3>Sotheby's</h3>
+        <p class="muted">Каталог живописи и предметов искусства.</p>
+        <a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.sothebys.com/en/buy/fine-art/painting">Найти лоты ↗</a>
+      </div></article>
+      <article class="card"><div class="card-body">
+        <span class="pill">Онлайн-аукционы</span><h3>Christie's</h3>
+        <p class="muted">Официальный раздел онлайн-торгов.</p>
+        <a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.christies.com/en/events/online-auctions">Найти лоты ↗</a>
+      </div></article>
+      <article class="card"><div class="card-body">
+        <span class="pill">Активные каталоги</span><h3>Phillips</h3>
+        <p class="muted">Каталог торгов и страницы отдельных предметов.</p>
+        <a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.phillips.com/auction">Открыть каталог ↗</a>
+      </div></article>
+    </div>
+    <p class="real-note">Встроенные ссылки служат запасным списком и не гарантируют, что торги ещё открыты. Для автоматического обновления активных лотов запусти сервер из файла server.js и подключи совместимый JSON-источник через переменную REAL_LOTS_FEED_URL. Формат источника описан в инструкции к серверу.</p>
+  </section>
+
+  <section id="catalog" style="margin-top:50px">
+    <div class="section-head"><h2>Демонстрационные лоты</h2><span class="muted" id="lotCount"></span></div>
+    <p class="real-note">Все карточки ниже вымышлены и предназначены для проверки интерфейса. Их цены, авторы и таймеры не относятся к реальным торгам.</p>
+    <div class="filters">
+      <input id="search" placeholder="Название, автор, тема..." oninput="render()">
+      <select id="category" onchange="render()"><option value="">Все категории</option><option>Живопись</option><option>Скульптура</option><option>Антиквариат</option><option>Фотография</option></select>
+      <select id="sort" onchange="render()"><option value="ending">Сначала скорое завершение</option><option value="priceAsc">Сначала дешевле</option><option value="priceDesc">Сначала дороже</option></select>
+    </div>
+    <div class="grid" id="lots"></div>
+  </section>
+
+  <section id="historySection" style="display:none;margin-top:50px">
+    <div class="section-head"><h2>История просмотров</h2><button onclick="clearHistory()">Очистить историю</button></div>
+    <div class="grid" id="historyLots"></div>
+  </section>
+  <section id="favoritesSection" style="display:none;margin-top:50px">
+    <h2>Избранные произведения</h2><div class="grid" id="favoriteLots"></div>
+  </section>
+</main>
+
+<footer>YGGDRASILL © 2026 · Демонстрационный проект. Внешние аукционы работают по правилам соответствующих площадок.</footer>
+
+<div class="modal" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="dialog">
+    <button class="close" onclick="closeAccount()" aria-label="Закрыть">✕</button>
+    <h2 id="modalTitle">Войти в Yggdrasill</h2>
+    <p class="muted" id="modalDescription">Продолжи свой путь по девяти мирам.</p>
+    <form id="accountForm">
+      <label for="username">Имя пользователя</label><input id="username" required minlength="3" autocomplete="username">
+      <div id="emailField" style="display:none"><label for="email">Электронная почта</label><input id="email" type="email" autocomplete="email"></div>
+      <label for="password">Пароль</label><input id="password" type="password" required minlength="8" autocomplete="current-password">
+      <button class="primary" style="width:100%" type="submit" id="submitAccount">Войти</button>
+    </form>
+    <p><button onclick="toggleAuth()" id="toggleAuth">Создать аккаунт</button></p>
+    <p class="real-note">Демо-режим: аккаунты хранятся в локальном браузере. Не используй настоящий пароль. Для реального сайта нужна серверная регистрация и база данных.</p>
+    <button onclick="logout()" id="logoutBtn" style="display:none">Выйти</button>
+  </div>
+</div>
+<div id="notice" role="status" aria-live="polite"></div>
+
+<script>
+const artworks = [
+ {id:1,title:"Тихий сад",author:"Элиас Винтер",cat:"Живопись",price:42000,emoji:"🌳",style:"Ванахейм",hours:5,tags:["природа","зелёный","живопись"]},
+ {id:2,title:"Лик полуночи",author:"Марта Нокс",cat:"Живопись",price:68500,emoji:"🌒",style:"Хельхейм",hours:2,tags:["готика","тёмный","живопись"]},
+ {id:3,title:"Ледяная память",author:"Сёрен Блэк",cat:"Скульптура",price:97000,emoji:"❄️",style:"Нифльхейм",hours:12,tags:["лёд","скульптура","серебро"]},
+ {id:4,title:"Последнее солнце",author:"Ариан Сол",cat:"Фотография",price:28000,emoji:"🌅",style:"Муспельхейм",hours:1,tags:["море","солнце","фотография"]},
+ {id:5,title:"Воронья корона",author:"Ингрид Восс",cat:"Антиквариат",price:155000,emoji:"👑",style:"Хельхейм",hours:26,tags:["готика","антиквариат","тёмный"]},
+ {id:6,title:"Дыхание леса",author:"Лив Эйрик",cat:"Живопись",price:51000,emoji:"🍃",style:"Ванахейм",hours:36,tags:["природа","лес","живопись"]},
+ {id:7,title:"Синее безмолвие",author:"Никлас Фрост",cat:"Фотография",price:34000,emoji:"🏔️",style:"Нифльхейм",hours:8,tags:["лёд","зима","фотография"]},
+ {id:8,title:"Золотой прибой",author:"Мира Коста",cat:"Живопись",price:73000,emoji:"🌊",style:"Муспельхейм",hours:18,tags:["море","солнце","живопись"]},
+ {id:9,title:"Маска древнего бога",author:"Эдгар Рун",cat:"Антиквариат",price:89000,emoji:"🎭",style:"Хельхейм",hours:48,tags:["готика","антиквариат","мифология"]}
+];
+const worlds = {
+ hel:{label:"WORLD I · HELHEIM",title:"Красота на грани тьмы.",text:"Готические полотна, забытые реликвии и шёпот древних легенд."},
+ nif:{label:"WORLD II · NIFLHEIM",title:"Тишина вечного льда.",text:"Холодное серебро, зимние пейзажи и тайны под снегом."},
+ van:{label:"WORLD III · VANAHEIM",title:"Там, где начинается жизнь.",text:"Природа, зелень, цветение и искусство, полное света."},
+ mus:{label:"WORLD IV · MUSPELHEIM",title:"Рождённые пламенем.",text:"Золотые берега, жаркое солнце и энергия летнего искусства."}
+};
+const $=id=>document.getElementById(id);
+function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
+function save(key,value){localStorage.setItem(key,JSON.stringify(value))}
+let world="hel",mode="login",currentUser=localStorage.getItem("yg_session")||"";
+let history=read("yg_history",[]),favorites=read("yg_favorites",[]),viewedTags=read("yg_tags",[]);
+function notify(text){$("notice").textContent=text;$("notice").style.display="block";clearTimeout(window.noticeTimer);window.noticeTimer=setTimeout(()=>$("notice").style.display="none",2600)}
+function money(n){return n.toLocaleString("ru-RU")+" ₸"}
+function go(id){$(id).scrollIntoView({behavior:"smooth",block:"start"})}
+
+// Запасные ссылки на реальные страницы лотов. Статус торгов проверяй у аукционного дома.
+const fallbackRealLots = [
+ {source:"Phillips",title:"Yellow Nights",artist:"Eva Helene Pade",category:"Живопись",estimate:"£30,000–50,000",url:"https://www.phillips.com/detail/eva-helene-pade/238647",symbol:"🌙"},
+ {source:"Phillips",title:"The Smile and Shudder",artist:"Cecily Brown",category:"Современное искусство",estimate:"£250,000–350,000",url:"https://www.phillips.com/detail/cecily-brown/238329",symbol:"🎨"},
+ {source:"Phillips",title:"Keep Ou T",artist:"Banksy",category:"Современное искусство",estimate:"£1,200,000–1,800,000",url:"https://www.phillips.com/detail/banksy/238143",symbol:"🖼️"}
+];
+function safeText(value){return String(value??"").replace(/[&<>\"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[c]))}
+function renderRealLots(lots){
+ const grid=$("realLotsGrid");
+ if(!Array.isArray(lots)||!lots.length){grid.innerHTML='<div class="empty">Источник не вернул лоты. Открой официальный каталог ниже.</div>';return}
+ grid.innerHTML=lots.map(l=>{
+  const url=String(l.url||l.link||"");
+  // Разрешаем только обычные HTTP(S)-ссылки, чтобы данные фида не могли внедрить javascript:
+  let validUrl="";try{const u=new URL(url);if(u.protocol==="https:"||u.protocol==="http:")validUrl=u.href}catch{}
+  const title=safeText(l.title||l.name||"Без названия"),artist=safeText(l.artist||l.creator||l.auction||"Автор не указан");
+  const source=safeText(l.source||l.auctionHouse||"Аукцион"),category=safeText(l.category||"Предмет искусства");
+  const estimate=safeText(l.estimate||l.priceEstimate||"Оценка не указана"),symbol=safeText(l.symbol||"🖼️");
+  const status=safeText(l.status||"Статус проверьте на сайте аукциона");
+  return `<article class="card"><div class="art">${symbol}<small>${source.toUpperCase()}</small></div><div class="card-body"><span class="pill">${category}</span><h3>${title}</h3><div class="muted">${artist}</div><div class="price" style="font-size:18px">${estimate}</div><p class="real-note">${status}</p>${validUrl?`<a class="btn primary" target="_blank" rel="noopener noreferrer" href="${safeText(validUrl)}">Открыть реальный лот ↗</a>`:'<span class="muted">Ссылка на лот отсутствует</span>'}</div></article>`
+ }).join("");
+}
+async function refreshRealLots(){
+ const button=$("refreshRealLotsBtn"),status=$("realLotsStatus");button.disabled=true;button.textContent="↻ Обновление…";status.className="refresh-status";status.textContent="Запрашиваю список у сервера…";
+ try{
+  // Серверный endpoint возвращает {lots:[...], updatedAt:"...", source:"..."}.
+  const response=await fetch("/api/real-lots",{headers:{"Accept":"application/json"},cache:"no-store"});
+  if(!response.ok)throw new Error("Сервер вернул HTTP "+response.status);
+  const data=await response.json();
+  if(!Array.isArray(data.lots))throw new Error("Неверный формат ответа API");
+  renderRealLots(data.lots);
+  const when=data.updatedAt?new Date(data.updatedAt):new Date();
+  const source=data.source==="feed"?"подключённый источник":"резервный список сервера";
+  status.textContent=`Обновлено: ${when.toLocaleString("ru-RU")} · ${data.lots.length} лот(а) · ${source}.`;
+  status.className="refresh-status "+(data.source==="feed"?"ok":"");
+ }catch(error){
+  renderRealLots(fallbackRealLots);
+  status.textContent="Не удалось получить список с сервера. Показаны сохранённые ссылки; запусти server.js и настрой источник данных.";
+  status.className="refresh-status error";
+ }
+ finally{button.disabled=false;button.textContent="↻ Обновить реальные лоты"}
+}
+function setWorld(w){
+ world=w;document.body.className=w;$("worldLabel").textContent=worlds[w].label;
+ $("heroTitle").textContent=worlds[w].title;$("heroText").textContent=worlds[w].text;
+ document.querySelectorAll(".season").forEach(b=>b.classList.toggle("active",b.dataset.world===w));render();
+}
+function autoWorld(){const m=new Date().getMonth()+1;if([9,10,11].includes(m))return"hel";if([12,1,2].includes(m))return"nif";if([3,4,5].includes(m))return"van";return"mus"}
+function card(a){
+ const isFav=favorites.includes(a.id);
+ return `<article class="card"><div class="art"><span>${a.emoji}</span><small>${a.style.toUpperCase()}</small></div>
+ <div class="card-body"><span class="pill">${a.cat}</span><h3>${a.title}</h3><div class="muted">${a.author}</div>
+ <div class="price">${money(a.price)}</div><div class="timer">Демо-лот · условное завершение через ${a.hours} ч.</div>
+ <div class="card-actions"><button onclick="viewLot(${a.id})">Изучить</button><button aria-label="Добавить в избранное" onclick="favorite(${a.id})">${isFav?"★":"☆"}</button></div>
+ <p class="real-note">Вымышленный лот. Ищи похожие произведения в реальных каталогах:</p>
+ <div class="link-list"><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.sothebys.com/en/buy/fine-art/painting">Sotheby's ↗</a>
+ <a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.christies.com/en/calendar">Christie's ↗</a>
+ <a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.phillips.com/auctions">Phillips ↗</a></div></div></article>`;
+}
+function render(){
+ const q=$("search").value.trim().toLowerCase(),cat=$("category").value;
+ let list=artworks.filter(a=>(a.title+" "+a.author+" "+a.tags.join(" ")).toLowerCase().includes(q));
+ if(cat)list=list.filter(a=>a.cat===cat);
+ if($("sort").value==="priceAsc")list.sort((a,b)=>a.price-b.price);
+ if($("sort").value==="priceDesc")list.sort((a,b)=>b.price-a.price);
+ if($("sort").value==="ending")list.sort((a,b)=>a.hours-b.hours);
+ $("lotCount").textContent=list.length+" демонстрационных лотов";
+ $("lots").innerHTML=list.length?list.map(card).join(""):'<div class="empty">Ничего не найдено. Измени запрос или фильтр.</div>';
+ const styleName={hel:"Хельхейм",nif:"Нифльхейм",van:"Ванахейм",mus:"Муспельхейм"}[world];
+ const score=a=>(a.style===styleName?2:0)+a.tags.filter(t=>viewedTags.includes(t)).length*3+(favorites.includes(a.id)?2:0);
+ const rec=[...artworks].sort((a,b)=>score(b)-score(a)).slice(0,3);
+ $("recommendations").innerHTML=rec.map(card).join("");
+}
+function viewLot(id){
+ const a=artworks.find(x=>x.id===id);if(!a)return;
+ history=[id,...history.filter(x=>x!==id)].slice(0,30);viewedTags=[...new Set([...viewedTags,...a.tags])];
+ save("yg_history",history);save("yg_tags",viewedTags);render();
+ alert(`${a.title}\nАвтор: ${a.author}\nКатегория: ${a.cat}\nДемонстрационная цена: ${money(a.price)}\n\nЭто вымышленный лот. Для настоящих торгов открой каталог одной из площадок на карточке.`);
+}
+function favorite(id){
+ if(!currentUser){notify("Войди в демо-аккаунт, чтобы использовать избранное.");openAccount();return}
+ favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];save("yg_favorites",favorites);render();notify("Избранное обновлено.");
+}
+function showHistory(){
+ $("historySection").style.display="block";$("favoritesSection").style.display="none";
+ const items=history.map(id=>artworks.find(a=>a.id===id)).filter(Boolean);
+ $("historyLots").innerHTML=items.length?items.map(card).join(""):'<div class="empty">Ты ещё не просматривал лоты.</div>';go("historySection");
+}
+function showFavorites(){
+ $("favoritesSection").style.display="block";$("historySection").style.display="none";
+ const items=favorites.map(id=>artworks.find(a=>a.id===id)).filter(Boolean);
+ $("favoriteLots").innerHTML=items.length?items.map(card).join(""):'<div class="empty">Пока нет избранных лотов.</div>';go("favoritesSection");
+}
+function clearHistory(){history=[];viewedTags=[];save("yg_history",history);save("yg_tags",viewedTags);showHistory();render()}
+function openAccount(){
+ $("accountModal").classList.add("show");
+ if(currentUser){$("modalTitle").textContent="Твой профиль";$("modalDescription").textContent="Ты вошёл как "+currentUser;$("accountForm").style.display="none";$("toggleAuth").style.display="none";$("logoutBtn").style.display="block"}
+ else{$("modalTitle").textContent=mode==="login"?"Войти в Yggdrasill":"Создать аккаунт";$("modalDescription").textContent="Продолжи свой путь по девяти мирам.";$("accountForm").style.display="block";$("toggleAuth").style.display="inline-block";$("logoutBtn").style.display="none"}
+}
+function closeAccount(){$("accountModal").classList.remove("show")}
+function toggleAuth(){
+ mode=mode==="login"?"register":"login";
+ $("modalTitle").textContent=mode==="login"?"Войти в Yggdrasill":"Создать аккаунт";
+ $("submitAccount").textContent=mode==="login"?"Войти":"Зарегистрироваться";
+ $("toggleAuth").textContent=mode==="login"?"Создать аккаунт":"Уже есть аккаунт? Войти";
+ $("emailField").style.display=mode==="register"?"block":"none";$("email").required=mode==="register";
+ $("password").autocomplete=mode==="login"?"current-password":"new-password";
+}
+async function hashPassword(password){
+ if(!window.crypto?.subtle)throw new Error("Для демо-регистрации открой сайт через localhost или современный браузер с безопасным контекстом.");
+ const hash=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(password));
+ return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+$("accountForm").addEventListener("submit",async e=>{
+ e.preventDefault();const name=$("username").value.trim(),password=$("password").value;
+ if(name.length<3||password.length<8){notify("Имя — минимум 3 символа, пароль — минимум 8.");return}
+ try{
+  const users=read("yg_users",{}),key=name.toLowerCase(),digest=await hashPassword(password);
+  if(mode==="register"){
+   if(users[key]){notify("Такое имя уже зарегистрировано в этом браузере.");return}
+   users[key]={name,email:$("email").value,passwordHash:digest};save("yg_users",users);
+  }else if(!users[key]||users[key].passwordHash!==digest){notify("Неверное имя пользователя или пароль.");return}
+  currentUser=users[key].name;localStorage.setItem("yg_session",currentUser);
+  $("accountBtn").textContent=currentUser;closeAccount();notify("Добро пожаловать, "+currentUser+"!");render();
+ }catch(err){notify(err.message||"Не удалось выполнить вход.")}
+});
+function logout(){
+ currentUser="";localStorage.removeItem("yg_session");$("accountBtn").textContent="Войти";
+ $("accountForm").reset();$("accountForm").style.display="block";$("toggleAuth").style.display="inline-block";
+ mode="register";toggleAuth();closeAccount();notify("Ты вышел из аккаунта.");
+}
+$("accountBtn").textContent=currentUser||"Войти";
+setWorld(autoWorld());
+renderRealLots(fallbackRealLots);
+refreshRealLots();
+</script>
+</body>
+</html>
